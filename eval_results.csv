@@ -1,0 +1,64 @@
+model,id,difficulty,correct,reason,sql
+Kimi K3,1,hard,True,match,SELECT CAST(SUM(total_runs) AS REAL) / COUNT(DISTINCT match_id) FROM deliveries
+Kimi K3,2,hard,False,mismatch,"SELECT batter,
+       ROUND(100.0 * SUM(CASE WHEN batsman_runs IN (4, 6) THEN batsman_runs ELSE 0 END) / SUM(batsman_runs), 2) AS boundary_percentage
+FROM deliveries
+GROUP BY batter
+HAVING SUM(batsman_runs) >= 500
+ORDER BY boundary_percentage DESC
+LIMIT 1"
+Kimi K3,3,hard,True,match,"SELECT COUNT(*) AS players_with_1000_runs
+FROM (
+    SELECT batter
+    FROM deliveries
+    GROUP BY batter
+    HAVING SUM(batsman_runs) >= 1000
+)"
+Kimi K3,4,hard,True,match,"SELECT bowler, COUNT(*) AS ball_count
+FROM deliveries
+WHERE extras_type IS NULL OR extras_type NOT IN ('wides', 'noballs')
+GROUP BY bowler
+ORDER BY ball_count DESC
+LIMIT 1"
+Kimi K3,5,hard,True,match,"SELECT batter, SUM(batsman_runs) AS runs
+FROM deliveries
+GROUP BY match_id, batter
+ORDER BY runs DESC
+LIMIT 1"
+Grok 4.5,1,hard,True,match,SELECT (SELECT SUM(total_runs) FROM deliveries) * 1.0 / (SELECT COUNT(*) FROM matches)
+Grok 4.5,2,hard,True,match,"SELECT batter, (SUM(CASE WHEN batsman_runs IN (4, 6) THEN batsman_runs ELSE 0 END) * 100.0 / SUM(batsman_runs)) AS boundary_percentage
+FROM deliveries
+GROUP BY batter
+HAVING SUM(batsman_runs) >= 500
+ORDER BY boundary_percentage DESC
+LIMIT 1"
+Grok 4.5,3,hard,True,match,SELECT COUNT(*) FROM (SELECT batter FROM deliveries GROUP BY batter HAVING SUM(batsman_runs) >= 1000)
+Grok 4.5,4,hard,False,mismatch,"SELECT bowler, COUNT(*) AS ball_count
+FROM deliveries
+WHERE extras_type IS NULL OR extras_type NOT IN ('wide', 'noball')
+GROUP BY bowler
+ORDER BY ball_count DESC
+LIMIT 1"
+Grok 4.5,5,hard,True,match,"SELECT batter, SUM(batsman_runs) AS runs FROM deliveries GROUP BY match_id, batter ORDER BY runs DESC LIMIT 1"
+Minimax M3,1,hard,True,match,"SELECT SUM(d.total_runs) * 1.0 / (SELECT COUNT(*) FROM matches) AS avg_runs_per_match
+FROM deliveries d"
+Minimax M3,2,hard,True,match,"SELECT batter,
+       100.0 * SUM(CASE WHEN batsman_runs IN (4, 6) THEN batsman_runs ELSE 0 END) / SUM(batsman_runs) AS boundary_percentage
+FROM deliveries
+GROUP BY batter
+HAVING SUM(batsman_runs) >= 500
+ORDER BY boundary_percentage DESC
+LIMIT 1"
+Minimax M3,3,hard,True,match,"SELECT COUNT(*) FROM (
+    SELECT batter, SUM(batsman_runs) AS total_runs
+    FROM deliveries
+    GROUP BY batter
+    HAVING SUM(batsman_runs) >= 1000
+)"
+Minimax M3,4,hard,False,sql_error,"SELECT bowler, COUNT(*) AS ball_count
+FROM"
+Minimax M3,5,hard,True,match,"SELECT batter, SUM(batsman_runs) AS total_runs
+FROM deliveries
+GROUP BY match_id, batter
+ORDER BY total_runs DESC
+LIMIT 1"
